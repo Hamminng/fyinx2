@@ -13,7 +13,7 @@ header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--
 header .container{display:flex;justify-content:space-between;align-items:center}.logo{font-size:18px;font-weight:600;color:var(--p)}
 nav{display:flex;gap:20px}nav a{color:var(--d);text-decoration:none;font-size:13px;cursor:pointer}nav a.active{color:var(--t)}
 .intro{padding:50px 0 30px;text-align:center}.intro h2{font-size:36px;margin-bottom:5px}.intro p{color:var(--d);font-size:15px}
-.main-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin:25px 0}
+.main-grid{display:grid;grid-template-columns:1fr;gap:15px;margin:25px 0}
 .box{background:var(--c);border:1px solid var(--b);padding:20px;border-radius:6px}
 .box h3{font-size:12px;color:var(--p);text-transform:uppercase;margin-bottom:12px;letter-spacing:1px}
 .stats-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--b);padding:8px 0;font-size:13px}.stats-row:last-child{border-bottom:none}
@@ -37,9 +37,7 @@ input.s-input{cursor:text;width:130px;text-align:right}button.danger{color:#ef44
 <div class="wrapper"><header><div class="container"><h1 class="logo">fyinx</h1><nav><a onclick="showPage('home')" id="nav-home">home</a><a onclick="showPage('games')" id="nav-games">games</a><a onclick="showPage('settings')" id="nav-settings">settings</a></nav></div></header>
 <main class="container">
 <section id="home" class="page-section active"><div class="intro"><h2>fyinx</h2><p>organized and efficient.</p></div>
-<div class="main-grid">
-<div class="box"><h3>statistics</h3><div class="stats-row"><span>system status</span><span style="color:var(--p)">functional</span></div><div class="stats-row"><span>stored items</span><span id="gameTotal">...</span></div><div class="stats-row"><span>client device</span><span id="deviceTypeHome">...</span></div></div>
-</div>
+<div class="main-grid"><div class="box"><h3>system information</h3><div class="stats-row"><span>status</span><span style="color:var(--p)">functional</span></div><div class="stats-row"><span>stored items</span><span id="gameTotal">...</span></div><div class="stats-row"><span>client device</span><span id="deviceTypeHome">...</span></div></div></div>
 <h3>quick launch</h3><div class="games-grid" id="featuredGames"></div></section>
 <section id="games" class="page-section"><div class="intro"><h2>library</h2><p id="gameStatus">fetching database...</p></div><div id="games-container" class="games-grid"></div></section>
 <section id="settings" class="page-section"><div class="intro"><h2>settings</h2></div>
@@ -48,10 +46,11 @@ input.s-input{cursor:text;width:130px;text-align:right}button.danger{color:#ef44
 <div class="setting-row"><span>typeface</span><select id="fontSelect"><option value="default">schoolbell</option><option value="modern">modern</option><option value="mono">monospace</option></select></div>
 <div class="setting-row"><span>compact layout</span><button class="action-btn" id="toggleCompact">disabled</button></div></div>
 <div class="settings-group"><h3>privacy</h3>
-<div class="setting-row"><span>panic trigger</span><input class="s-input" id="panicKey" placeholder="e.g. Escape"></div>
-<div class="setting-row"><span>panic redirect</span><input class="s-input" id="panicUrl" placeholder="https://google.com"></div></div>
-<div class="settings-group"><h3>maintenance</h3>
-<div class="setting-row"><span>clear preferences</span><button class="action-btn danger" id="clearData">factory reset</button></div></div></section></main></div>
+<div class="setting-row"><span>panic key</span><input class="s-input" id="panicKey" placeholder="e.g. Escape"></div>
+<div class="setting-row"><span>panic goal</span><input class="s-input" id="panicUrl" placeholder="https://google.com"></div></div>
+<div class="settings-group"><h3>data management</h3>
+<div class="setting-row"><span>export backup</span><button class="action-btn" id="downloadData">save .json</button></div>
+<div class="setting-row"><span>clear cache</span><button class="action-btn danger" id="clearData">factory reset</button></div></div></section></main></div>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
     const originalTitle = document.title;
@@ -65,7 +64,6 @@ window.addEventListener('DOMContentLoaded', () => {
             updateFavicon(originalIcon);
         }
     });
-
 //this is where if your out of tab it changes the favicon & title to google classroom
     function updateFavicon(url) {
         let link = document.querySelector("link[rel='icon']");
@@ -105,12 +103,13 @@ const renderGames = (containerId, data) => {
 };
 
 async function openGame(name, url) {
+    const absUrl = new URL(url, document.baseURI).href;
     const frame = document.createElement('div');
     frame.className = 'game-frame active';
-    frame.innerHTML = `<div class="frame-header"><span class="logo">${name}</span><div class="frame-controls"><button class="action-btn" id="dl">download</button><button class="action-btn" id="cl">close</button></div></div><div class="game-iframe-container"><div class="loading-screen"><div class="loader"></div></div><iframe src="${url}"></iframe></div>`;
+    frame.innerHTML = `<div class="frame-header"><span class="logo">${name}</span><div class="frame-controls"><button class="action-btn" id="dl">download</button><button class="action-btn" id="cl">close</button></div></div><div class="game-iframe-container"><div class="loading-screen"><div class="loader"></div></div><iframe src="${absUrl}"></iframe></div>`;
     frame.querySelector('#cl').onclick = () => frame.remove();
     frame.querySelector('#dl').onclick = async () => {
-        try { const r = await fetch(new URL(url, document.baseURI).href); const b = await r.blob(); const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(b), download: `${name.replace(/\s+/g,'_')}.html`}); a.click(); } catch(e) { window.open(new URL(url, document.baseURI).href, '_blank'); }
+        try { const r = await fetch(absUrl); const b = await r.blob(); const a = Object.assign(document.createElement('a'), {href: URL.createObjectURL(b), download: `${name.replace(/\s+/g,'_')}.html`}); a.click(); } catch(e) { window.open(absUrl, '_blank'); }
     };
 //iframing from /g/
     const ifr = frame.querySelector('iframe');
@@ -151,6 +150,12 @@ function init() {
 }
 
 document.getElementById('clearData').onclick = () => { if(confirm('clear site preferences?')) { localStorage.clear(); location.reload(); } };
+
+document.getElementById('downloadData').onclick = () => {
+    const b = new Blob([JSON.stringify(localStorage)], {type:'application/json'});
+    const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(b), download:'fyinx-backup.json'});
+    a.click();
+};
 //clearing data
 
 init();

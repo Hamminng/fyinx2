@@ -7,5 +7,8 @@
 ## Why ads?
 **Money, supports Truffled VPS.**
 
+## How to use?
+**Either embed the html code onto a html code embedder, Or either open the file directly after downloading it.**
+
 # https://github.com/aukak/fyinx/
 # https://fyinx.wtf
